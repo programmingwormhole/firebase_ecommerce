@@ -1,13 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ecommerce_firebase/global_widgets/custom_button.dart';
 import 'package:ecommerce_firebase/global_widgets/custom_widget.dart';
 import 'package:ecommerce_firebase/helpers/form_helper.dart';
 import 'package:ecommerce_firebase/views/Authentication/LoginScreen/login_screen.dart';
+import 'package:ecommerce_firebase/views/HomeScreen/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../utils/colors.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
+
+  @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final _email = TextEditingController();
+  final _password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -40,12 +51,16 @@ class RegisterScreen extends StatelessWidget {
               ),
               Column(
                 children: [
-                  const CustomTextField(hintText: 'Email'),
+                  CustomTextField(
+                    hintText: 'Email',
+                    controller: _email,
+                  ),
                   const SizedBox(
                     height: 15,
                   ),
                   CustomTextField(
                     hintText: 'Password',
+                    controller: _password,
                     secured: true,
                     suffixIcon: IconButton(
                       onPressed: () {},
@@ -66,7 +81,27 @@ class RegisterScreen extends StatelessWidget {
                   const SizedBox(
                     height: 20,
                   ),
-                  const CustomButton(buttonTitle: 'Sign Up'),
+                  CustomButton(
+                    buttonTitle: 'Sign Up',
+                    onTap: () async {
+                      try {
+                        await FirebaseAuth.instance
+                            .createUserWithEmailAndPassword(
+                          email: _email.text,
+                          password: _password.text,
+                        ).then((value) {
+                          FirebaseFirestore.instance.collection('users').doc(_email.text).set({
+                            'email' : _email.text,
+                            'password' : _password.text,
+                            'cart' : 'cart'
+                          });
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                      }
+                    },
+                  ),
                   const SizedBox(
                     height: 15,
                   ),

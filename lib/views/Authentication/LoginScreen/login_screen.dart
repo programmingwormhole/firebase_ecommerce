@@ -4,10 +4,20 @@ import 'package:ecommerce_firebase/helpers/form_helper.dart';
 import 'package:ecommerce_firebase/utils/colors.dart';
 import 'package:ecommerce_firebase/views/Authentication/RegisterScreen/register_screen.dart';
 import 'package:ecommerce_firebase/views/BottomNavBarView/bottom_view.dart';
+import 'package:ecommerce_firebase/views/HomeScreen/home_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _email = TextEditingController();
+  final _password = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +50,9 @@ class LoginScreen extends StatelessWidget {
               ),
               Column(
                 children: [
-                  const CustomTextField(
+                  CustomTextField(
                     hintText: 'Email',
+                    controller: _email,
                   ),
                   const SizedBox(
                     height: 15,
@@ -49,6 +60,7 @@ class LoginScreen extends StatelessWidget {
                   CustomTextField(
                     hintText: 'Password',
                     secured: true,
+                    controller: _password,
                     suffixIcon: IconButton(
                         onPressed: () {}, icon: const Icon(Icons.visibility)),
                   ),
@@ -72,13 +84,18 @@ class LoginScreen extends StatelessWidget {
                   ),
                   CustomButton(
                     buttonTitle: 'Login',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const BottomBarScreen(),
-                        ),
-                      );
+                    onTap: () async {
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: _email.text,
+                          password: _password.text,
+                        ).then((value){
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+                        });
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())));
+                      }
                     },
                   ),
                   const SizedBox(
